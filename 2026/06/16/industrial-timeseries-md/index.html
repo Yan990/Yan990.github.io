@@ -15,14 +15,14 @@
 <meta property="og:site_name" content="yan990">
 <meta property="og:description" content="在现代工业制造中，复杂工艺流程的自动化控制常常面临大惯性、高滞后的物理瓶颈。例如在烟草制造的干燥环节中，从加热器加温到烘丝筒内的实际温度与水分发生变化，存在长达数十秒的物理滞后，这使得传统的 PID 调节器或人工经验调节往往力不从心，容易导致产品质量波动。 本文将介绍一个实际落地的横向科研项目：如何利用工业生产线上的海量秒级多源传感器时序数据，构建一套基于 Transformer-LSTM 架构的">
 <meta property="og:locale" content="zh_CN">
-<meta property="og:image" content="https://yan990.github.io/2026/06/16/images/moistprediction.png">
-<meta property="og:image" content="https://yan990.github.io/2026/06/16/images/tempatureprediction.png">
-<meta property="og:image" content="https://yan990.github.io/2026/06/16/images/outlierdetectionmoist.png">
+<meta property="og:image" content="https://yan990.github.io/moistprediction.png">
+<meta property="og:image" content="https://yan990.github.io/tempatureprediction.png">
+<meta property="og:image" content="https://yan990.github.io/outlierdetectionmoist.png">
 <meta property="article:published_time" content="2026-06-16T02:58:01.000Z">
-<meta property="article:modified_time" content="2026-06-16T03:34:20.000Z">
+<meta property="article:modified_time" content="2026-06-16T05:54:50.000Z">
 <meta property="article:author" content="yan990">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:image" content="https://yan990.github.io/2026/06/16/images/moistprediction.png">
+<meta name="twitter:image" content="https://yan990.github.io/moistprediction.png">
   
     <link rel="alternative" href="/atom.xml" title="yan990" type="application/atom+xml">
   
@@ -51,7 +51,7 @@
 <div class="intrude-less">
 	<header id="header" class="inner">
 		<a href="/" class="profilepic">
-			<img src="./img/profile.jpg" class="js-avatar">
+			<img src="/img/profile.jpg" class="js-avatar">
 		</a>
 		<hgroup>
 		  <h1 class="header-author"><a href="/"></a></h1>
@@ -103,7 +103,7 @@
 	<div class="intrude-less">
 		<header id="header" class="inner">
 			<div class="profilepic">
-				<img src="./img/profile.jpg" class="js-avatar">
+				<img src="/img/profile.jpg" class="js-avatar">
 			</div>
 			<hgroup>
 			  <h1 class="header-author js-header-author"></h1>
@@ -269,14 +269,8 @@
 <li><strong>水分预测轨（Transformer-LSTM）：</strong> 水分指标对多变量传感器的交叉干扰极为敏感。我们利用 Transformer 的自注意力机制（Self-Attention）在空间维度上建模多传感器变量之间的工艺关联性，再经由 LSTM 在时间维度上进行流式解码。</li>
 </ol>
 <h3 id="成果展现"><a href="#成果展现" class="headerlink" title="成果展现"></a>成果展现</h3><p>该架构成功实现了 <strong>45 秒的超前预测</strong>，将水分与温度的预测平均绝对误差（MAE）大幅降至 <strong>0.05</strong>。更重要的是，在跨厂区、跨生产线的测试数据上，模型的误差波动极小，展现出极强的泛化性能，完全满足工业级即时反馈控制的要求。</p>
-<div align=center><img src="../images/moistprediction.png"></div>
-
-
-
-<div align=center><img src="../images/tempatureprediction.png"></div>
-
-
-
+<p><img src="/moistprediction.png"></p>
+<p><img src="/tempatureprediction.png"></p>
 <h2 id="四、-智能异常检测：解决样本稀缺难题"><a href="#四、-智能异常检测：解决样本稀缺难题" class="headerlink" title="四、 智能异常检测：解决样本稀缺难题"></a>四、 智能异常检测：解决样本稀缺难题</h2><p>工业场景中，我们无法承担等系统崩溃后再收集异常数据的成本。为此，我们采取了「主动出击」的方案。</p>
 <h3 id="1-基于工艺机理的「人工异常注入」"><a href="#1-基于工艺机理的「人工异常注入」" class="headerlink" title="1. 基于工艺机理的「人工异常注入」"></a>1. 基于工艺机理的「人工异常注入」</h3><p>在工业界，极其成熟的生产线极少发生重大故障，导致模型训练面临严重的“正负样本极度不平衡”（异常数据占比极低）。为了训练出高灵敏度的异常检测器，我们摒弃了纯随机生成噪声的做法，而是<strong>深度结合卷烟厂近 3 年的 1287 次真实历史故障案例</strong>，主动向 2% 的正常数据中注入了三类符合物理逻辑的异常特征：</p>
 <ol>
@@ -287,7 +281,7 @@
 <p><strong>双重金标准标注：</strong> 异常样本的标签（Label）并非由算法盲目生成，而是由工厂工艺专家依据双重标准严格复核确认：① <strong>工艺规程阈值</strong>（SOP 手册中关键参数的允许波动绝对范围）；② <strong>历史故障案例特征库</strong>（强匹配历史真实断料、堵料的波形特征）。</p>
 <h3 id="2-多维异常识别"><a href="#2-多维异常识别" class="headerlink" title="2. 多维异常识别"></a>2. 多维异常识别</h3><p>在构造了足够的异常样本后，我们提取时间注意力权重作为高维特征，结合 <strong>LOF（局部离群因子，Local Outlier Factor）</strong> 算法建立多维局部密度评估模型。LOF 通过比较当前工艺状态与邻近正常生产状态的密度差异，能够精准捕捉微小的异常苗头。</p>
 <p>最终，该系统在干燥阶段的复合异常检测任务中，实现了高达 <strong>87.7% 的召回率</strong>，成功防范了多起潜在的设备停机事故。</p>
-<div align=center><img src="../images/outlierdetectionmoist.png"></div>
+<p><img src="/outlierdetectionmoist.png"></p>
 
       
 
