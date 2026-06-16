@@ -19,7 +19,7 @@
 <meta property="og:image" content="e:\blog\source\images\tempatureprediction.png">
 <meta property="og:image" content="e:\blog\source\images\outlierdetectionmoist.png">
 <meta property="article:published_time" content="2026-06-16T02:58:01.000Z">
-<meta property="article:modified_time" content="2026-06-16T02:59:52.000Z">
+<meta property="article:modified_time" content="2026-06-16T03:11:30.000Z">
 <meta property="article:author" content="yan990">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:image" content="e:\blog\source\images\moistprediction.png">
@@ -168,6 +168,8 @@
       
         <h1 id="基于-Transformer-LSTM-的智能化时序预测与异常检测系统"><a href="#基于-Transformer-LSTM-的智能化时序预测与异常检测系统" class="headerlink" title="基于 Transformer-LSTM 的智能化时序预测与异常检测系统"></a>基于 Transformer-LSTM 的智能化时序预测与异常检测系统</h1><p>在现代工业制造中，复杂工艺流程的自动化控制常常面临<strong>大惯性、高滞后</strong>的物理瓶颈。例如在烟草制造的干燥环节中，从加热器加温到烘丝筒内的实际温度与水分发生变化，存在长达数十秒的物理滞后，这使得传统的 PID 调节器或人工经验调节往往力不从心，容易导致产品质量波动。</p>
 <p>本文将介绍一个实际落地的横向科研项目：如何利用工业生产线上的海量秒级多源传感器时序数据，构建一套基于 <strong>Transformer-LSTM</strong> 架构的超前预测与异常检测系统，实现对核心工艺指标的智能控制预警。</p>
+<span id="more"></span>
+
 <h2 id="一、数据集介绍"><a href="#一、数据集介绍" class="headerlink" title="一、数据集介绍"></a>一、数据集介绍</h2><p>本项目使用的数据集采集自某卷烟厂真实的工业生产环境，旨在通过多维传感器数据，精准预测烟草干燥过程中的出口物料水分。该数据集的结构为<strong>秒级面板时序数据（Second-level panel time-series data）</strong>，为时序预测与异常检测模型提供了稳健且可靠的数据基础。</p>
 <h3 id="烘丝水分预测："><a href="#烘丝水分预测：" class="headerlink" title="烘丝水分预测："></a>烘丝水分预测：</h3><h4 id="1-数据采集与质量控制"><a href="#1-数据采集与质量控制" class="headerlink" title="1. 数据采集与质量控制"></a>1. 数据采集与质量控制</h4><ul>
 <li><strong>数据来源：</strong> 采集自 KLD-2 型滚筒式薄板干燥机，涵盖了 2024 年生产的 42 个“天子（金）”品牌批次的完整记录。</li>
