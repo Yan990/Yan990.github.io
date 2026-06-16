@@ -316,6 +316,137 @@
 
 
   
+    <article id="post-fraud-detection-md" class="article article-type-post  article-index" itemscope itemprop="blogPost">
+  <div class="article-inner">
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2026/06/16/fraud-detection-md/">fraud_detection.md</a>
+    </h1>
+  
+
+        
+        <a href="/2026/06/16/fraud-detection-md/" class="archive-article-date">
+  	<time datetime="2026-06-16T02:55:30.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2026-06-16</time>
+</a>
+        
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h1 id="金融风控实战：结合-LightGBM-与异构图神经网络（HeteroGNN）的交易反欺诈检测"><a href="#金融风控实战：结合-LightGBM-与异构图神经网络（HeteroGNN）的交易反欺诈检测" class="headerlink" title="金融风控实战：结合 LightGBM 与异构图神经网络（HeteroGNN）的交易反欺诈检测"></a>金融风控实战：结合 LightGBM 与异构图神经网络（HeteroGNN）的交易反欺诈检测</h1><p>在大规模金融交易场景中，反欺诈模型面临着两大核心挑战：<strong>极度不平衡的正负样本（欺诈交易通常仅占总量极小比例）</strong>，以及<strong>欺诈手段的团伙化与隐蔽性</strong>。传统的机器学习模型擅长处理结构化的统计特征，却难以捕捉账号、设备、邮箱之间错综复杂的关联网络。</p>
+<p>本文将分享如何基于 IEEE-CIS 与金融交易欺诈数据集，设计了关于「结构化特征树」与「拓扑关系图」两种模型的反欺诈检测。本设计不仅能高效处理稠密表格数据，还能通过异构图神经网络（HeteroGNN）挖掘潜在的团伙作案模式，并引入前沿的<strong>自适应边扰动机制</strong>来提升图模型的鲁棒性。</p>
+<h2 id="一、数据集介绍"><a href="#一、数据集介绍" class="headerlink" title="一、数据集介绍"></a>一、数据集介绍</h2><h3 id="1-IEEE-CIS-在线交易欺诈数据集"><a href="#1-IEEE-CIS-在线交易欺诈数据集" class="headerlink" title="1. IEEE-CIS 在线交易欺诈数据集"></a>1. IEEE-CIS 在线交易欺诈数据集</h3><p> 这个数据集由支付保护公司 Vesta Corporation 提供，模拟的是<strong>电子商务和在线支付</strong>场景。它的核心目标是判断“当前这笔支付操作，是不是信用卡持卡人本人发起的？”（即防盗刷、防黑产团伙套现），具有<strong>特征维度高、分类变量多、存在大量缺失值且正负样本极度不平衡</strong>的特点。本项目中的 <strong>LightGBM 树模型</strong>与**基于交易节点的 HeteroGNN（异构图神经网络）**均基于此数据集开发。</p>
+<ul>
+<li><strong>数据结构</strong>：数据被拆分为交易表（<code>transaction</code>）和身份验证表（<code>identity</code>），两者通过主键 <code>TransactionID</code> 进行左连接。需要注意的是，并非所有交易都有对应的身份信息。</li>
+<li><strong>核心特征</strong>：<ul>
+<li><strong>交易表（Transaction）</strong>：包含二分类目标标签 <code>isFraud</code>，以及支付产品代码（<code>ProductCD</code>）、银行卡脱敏信息（<code>card1</code> - <code>card6</code>）、地址信息（<code>addr1</code>, <code>addr2</code>）、买卖双方邮箱域名（<code>P_emaildomain</code>, <code>R_emaildomain</code>）等。</li>
+<li><strong>身份表（Identity）</strong>：包含设备类型（<code>DeviceType</code>）、设备信息（<code>DeviceInfo</code>）以及一系列脱敏的网络与设备属性特征（<code>id_12</code> - <code>id_38</code>），为了提升特征表达能力，项目对其中的设备名称、操作系统、浏览器等进行了深度的结构化拆解。</li>
+</ul>
+</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br></pre></td><td class="code"><pre><span class="line"> #   Column         Non-Null Count   Dtype  </span><br><span class="line">---  ------         --------------   -----  </span><br><span class="line"> 0   TransactionID  144233 non-null  int64  </span><br><span class="line"> 1   id_01          144233 non-null  float64</span><br><span class="line"> 2   id_02          140872 non-null  float64</span><br><span class="line"> 3   id_03          66324 non-null   float64</span><br><span class="line"> 4   id_04          66324 non-null   float64</span><br><span class="line"> 5   id_05          136865 non-null  float64</span><br><span class="line"> 6   id_06          136865 non-null  float64</span><br><span class="line"> 7   id_07          5155 non-null    float64</span><br><span class="line"> 8   id_08          5155 non-null    float64</span><br><span class="line"> 9   id_09          74926 non-null   float64</span><br><span class="line"> 10  id_10          74926 non-null   float64</span><br><span class="line"> 11  id_11          140978 non-null  float64</span><br><span class="line"> 12  id_12          144233 non-null  object </span><br><span class="line"> 13  id_13          127320 non-null  float64</span><br><span class="line"> 14  id_14          80044 non-null   float64</span><br><span class="line"> 15  id_15          140985 non-null  object </span><br><span class="line"> 16  id_16          129340 non-null  object </span><br><span class="line"> 17  id_17          139369 non-null  float64</span><br><span class="line"> 18  id_18          45113 non-null   float64</span><br><span class="line"> 19  id_19          139318 non-null  float64</span><br><span class="line"> 20  id_20          139261 non-null  float64</span><br><span class="line"> 21  id_21          5159 non-null    float64</span><br><span class="line"> 22  id_22          5169 non-null    float64</span><br><span class="line"> 23  id_23          5169 non-null    object </span><br><span class="line"> 24  id_24          4747 non-null    float64</span><br><span class="line"> 25  id_25          5132 non-null    float64</span><br><span class="line"> 26  id_26          5163 non-null    float64</span><br><span class="line"> 27  id_27          5169 non-null    object </span><br><span class="line"> 28  id_28          140978 non-null  object </span><br><span class="line"> 29  id_29          140978 non-null  object </span><br><span class="line"> 30  id_30          77565 non-null   object </span><br><span class="line"> 31  id_31          140282 non-null  object </span><br><span class="line"> 32  id_32          77586 non-null   float64</span><br><span class="line"> 33  id_33          73289 non-null   object </span><br><span class="line"> 34  id_34          77805 non-null   object </span><br><span class="line"> 35  id_35          140985 non-null  object </span><br><span class="line"> 36  id_36          140985 non-null  object </span><br><span class="line"> 37  id_37          140985 non-null  object </span><br><span class="line"> 38  id_38          140985 non-null  object </span><br><span class="line"> 39  DeviceType     140810 non-null  object </span><br><span class="line"> 40  DeviceInfo     118666 non-null  object </span><br><span class="line"> ...</span><br></pre></td></tr></table></figure>
+
+
+
+<h3 id="2-金融交易合成数据集（Financial-Transactions-Dataset）"><a href="#2-金融交易合成数据集（Financial-Transactions-Dataset）" class="headerlink" title="2. 金融交易合成数据集（Financial Transactions Dataset）"></a>2. 金融交易合成数据集（Financial Transactions Dataset）</h3><p>该数据集包含 500 万条合成生成的金融交易记录，旨在高度模拟真实世界中的复杂交易行为，专门用于欺诈检测研究及机器学习应用。本项目中的**账户级异构图欺诈识别模型（GNN-Fraud）**基于此数据集构建。</p>
+<ul>
+<li><strong>数据特点</strong>：有别于单笔交易维度的判断，该数据集提供了明确的收付款账户网络与丰富的动态行为评分，非常适合用于构建资金流链路网络和设备共用网络。</li>
+<li><strong>核心特征</strong>：<ul>
+<li><strong>交易详情与元数据</strong>：包含发送方&#x2F;接收方账户（<code>sender_account</code>, <code>receiver_account</code>）、交易金额、交易类型（如存款、转账等）、商户类别、支付渠道、IP 地址及设备哈希值（<code>device_hash</code>）。</li>
+<li><strong>动态行为评分</strong>：内置了风控场景中极具价值的衍生特征，包括上次交易时间、消费偏离度评分（<code>spending_deviation_score</code>）、交易速度评分（<code>velocity_score</code>）以及地理异常评分（<code>geo_anomaly_score</code>）。</li>
+<li><strong>欺诈标签</strong>：包含二进制的欺诈标记（<code>is_fraud</code>）以及具体的欺诈类型（如洗钱、账户接管等）。</li>
+</ul>
+</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">#   Column                       Dtype         </span><br><span class="line">---  ------                       -----         </span><br><span class="line"> 0   transaction_id               object        </span><br><span class="line"> 1   timestamp                    datetime64[ns]</span><br><span class="line"> 2   sender_account               object        </span><br><span class="line"> 3   receiver_account             object        </span><br><span class="line"> 4   amount                       float64       </span><br><span class="line"> 5   transaction_type             object        </span><br><span class="line"> 6   merchant_category            object        </span><br><span class="line"> 7   location                     object        </span><br><span class="line"> 8   device_used                  object        </span><br><span class="line"> 9   is_fraud                     bool          </span><br><span class="line"> 10  fraud_type                   object        </span><br><span class="line"> 11  time_since_last_transaction  float64       </span><br><span class="line"> 12  spending_deviation_score     float64       </span><br><span class="line"> 13  velocity_score               int64         </span><br><span class="line"> 14  geo_anomaly_score            float64       </span><br><span class="line"> 15  payment_channel              object        </span><br><span class="line"> 16  ip_address                   object        </span><br><span class="line"> 17  device_hash                  object  </span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="二、-架构设计"><a href="#二、-架构设计" class="headerlink" title="二、 架构设计"></a>二、 架构设计</h2><ol>
+<li><strong>表格特征（LightGBM）：</strong> 聚焦于单笔交易的属性，如交易金额、时间、设备类型、邮箱域名的细粒度切分，通过强大的梯度提升树捕捉高维非线性特征。</li>
+<li><strong>拓扑关系（HeteroGNN）：</strong> 将交易抽象为多类型节点（帐户、设备、邮箱、交易本身）组成的异构图，利用图卷积网络学习网络拓扑中的风险传播路径。</li>
+</ol>
+<hr>
+<h2 id="三、-结构化特征工程与-LightGBM-建模"><a href="#三、-结构化特征工程与-LightGBM-建模" class="headerlink" title="三、 结构化特征工程与 LightGBM 建模"></a>三、 结构化特征工程与 LightGBM 建模</h2><h3 id="1-深度特征交互"><a href="#1-深度特征交互" class="headerlink" title="1. 深度特征交互"></a>1. 深度特征交互</h3><p>在风控场景中，绝对数值（如交易金额）往往不如相对数值（如当前交易金额与该卡片历史平均交易金额的比值）敏感。因此，我们围绕核心实体构建了大量的统计对齐特征：</p>
+<ul>
+<li><strong>均值&#x2F;标准差比值：</strong> 计算 <code>TransactionAmt</code>、<code>id_02</code>、<code>D15</code> 分别对齐 <code>card1</code>、<code>card4</code>、<code>addr1</code> 的分组均值与标准差（例如 <code>TransactionAmt_to_mean_card1</code>）。</li>
+<li><strong>时间周期特征：</strong> 将匿名时间戳 <code>TransactionDT</code> 转换为周期性的 24 小时制和星期几，并利用正弦（Sin）与余弦（Cos）编码保持时间的连续性。</li>
+<li><strong>高基数类别编码：</strong> 对邮箱域名进行精细化切分（如提取后缀、划分主流供应商如 google、microsoft、aol 等），并进行全域计数编码（Count Encoding）。</li>
+</ul>
+<h3 id="2-对抗极端不平衡"><a href="#2-对抗极端不平衡" class="headerlink" title="2. 对抗极端不平衡"></a>2. 对抗极端不平衡</h3><p>欺诈样本极其稀疏。在树模型中，我们配置了 <code>scale_pos_weight = 60</code>，通过直接为少数类（欺诈样本）分配更高的损失权重，强迫模型关注欺诈特征。最终，经过 5 折交叉验证与超参数优化，LightGBM 模型在测试集上的 AUC 达到了 <strong>90.4%</strong>。</p>
+<hr>
+<h2 id="四、-异构图网络（HeteroGNN）与拓扑降噪"><a href="#四、-异构图网络（HeteroGNN）与拓扑降噪" class="headerlink" title="四、 异构图网络（HeteroGNN）与拓扑降噪"></a>四、 异构图网络（HeteroGNN）与拓扑降噪</h2><p>当欺诈分子使用多个虚假账号轮流在少数几台设备上进行操作时，树模型很难将这些孤立的交易关联起来。此时，图网络便能发挥威力，我们基于上述两种数据集均构建了异构图。</p>
+<h3 id="1-异构图架构构建"><a href="#1-异构图架构构建" class="headerlink" title="1. 异构图架构构建"></a>1. 异构图架构构建</h3><p><strong>IEEE-CIS:</strong></p>
+<ul>
+<li><strong>节点：</strong> 交易（<code>txn</code>）、卡片（<code>card1</code><del><code>card6</code>）、地理位置（<code>addr1</code></del><code>addr2</code>）、邮箱（<code>p_email</code>、<code>r_email</code>）、设备（<code>device</code>、<code>devtype</code>、<code>os</code>、<code>browser</code>）。</li>
+<li><strong>边关系：</strong> <code>(txn, has_card, card)</code> 及其逆向边 <code>(card, rev_has_card, txn)</code>。此外，为了加强同类实体间的关联，我们还建立了基于相同 <code>card1</code> 的交易间连边 <code>(txn, same_card1, txn)</code>，并限制最大连接度（<code>max_degree=20</code>）以防止超级节点（Super Nodes）导致的图结构爆炸。</li>
+</ul>
+<p><strong>Financial Transactions Dataset:</strong></p>
+<ul>
+<li><strong>节点：</strong> 账户（<code>account</code>，由 <code>sender_account</code> 和 <code>receiver_account</code> 合并去重构成，代表交易网络中的资金实体）、设备（<code>device</code>，由设备哈希 <code>device_hash</code> 构成，代表物理操作媒介）。</li>
+<li><strong>边关系：</strong> 包含两类核心语义网络。一是<strong>资金流转网络</strong>，即从发送方指向接收方的转账关系 <code>(account, transacts_with, account)</code>；二是<strong>设备共用&#x2F;关联网络</strong>，即账户与操作设备之间的使用关系 <code>(account, uses, device)</code>。这种双层异构构图方式能够同时捕捉异常的资金洗牌链路（如洗钱）和高危设备团伙作案风险。</li>
+<li><strong>特征聚合与预测目标：</strong> 区别于将“单笔交易”作为节点的逻辑，本场景侧重于“账户风险识别”。我们将单笔交易的风控衍生特征（交易速度异常 <code>velocity_score</code>、消费偏离度 <code>spending_deviation_score</code>、地理位置异常 <code>geo_anomaly_score</code>）按发送方账户取均值，作为账户节点的初始特征；若某账户历史上发起过任何欺诈交易，则将该账户节点整体标记为高风险（欺诈）节点。</li>
+</ul>
+<h3 id="2-创新点：基于注意力机制的自适应边扰动（Adaptive-Edge-Perturbation）"><a href="#2-创新点：基于注意力机制的自适应边扰动（Adaptive-Edge-Perturbation）" class="headerlink" title="2. 创新点：基于注意力机制的自适应边扰动（Adaptive Edge Perturbation）"></a>2. 创新点：基于注意力机制的自适应边扰动（Adaptive Edge Perturbation）</h3><p>在真实图网络中，不可避免地存在大量噪声边（例如某个公共场所的 WiFi 绑定了过多设备）。如果直接进行信息传递（Message Passing），会导致「过平滑（Over-smoothing）」或风险误导。</p>
+<p>为此，我们设计了一个 <strong>自适应边扰动生成器（Adaptive Edge Perturbation Generator）</strong>。其核心思想是：利用一个独立的注意力模块（<code>EdgeTypeAttention</code>），结合当前的欺诈上下文（Fraud Context）和节点嵌入，动态学习每一种边类型对风控预测的贡献权重。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">class EdgeTypeAttention(nn.Module):</span><br><span class="line">    def __init__(self, hidden_dim: int, num_edge_types: int):</span><br><span class="line">        super().__init__()</span><br><span class="line">        self.edge_type_embeddings = nn.Parameter(torch.randn(num_edge_types, hidden_dim) * 0.1)</span><br><span class="line">        self.attention_mlp = nn.Sequential(</span><br><span class="line">            nn.Linear(hidden_dim * 2, hidden_dim),</span><br><span class="line">            nn.ReLU(),</span><br><span class="line">            nn.Linear(hidden_dim, 1)</span><br><span class="line">        )</span><br><span class="line"></span><br><span class="line">    def forward(self, node_embeddings_dict, fraud_context):</span><br><span class="line">        # 聚合全局节点上下文</span><br><span class="line">        all_embeddings = [emb.mean(dim=0, keepdim=True) for emb in node_embeddings_dict.values() if emb.size(0) &gt; 0]</span><br><span class="line">        context = torch.cat(all_embeddings, dim=0).mean(dim=0, keepdim=True)</span><br><span class="line">        context = self.context_aggregator(context + fraud_context)</span><br><span class="line">        </span><br><span class="line">        # 计算每种边类型的权重</span><br><span class="line">        edge_type_scores = []</span><br><span class="line">        for edge_type_emb in self.edge_type_embeddings:</span><br><span class="line">            combined = torch.cat([edge_type_emb.unsqueeze(0), context], dim=1)</span><br><span class="line">            edge_type_scores.append(self.attention_mlp(combined))</span><br><span class="line">        return F.softmax(torch.cat(edge_type_scores, dim=0).squeeze(-1), dim=0)</span><br></pre></td></tr></table></figure>
+
+
+      
+
+      
+    </div>
+    <div class="article-info article-info-index">
+      
+      
+	<div class="article-tag tagcloud">
+		<i class="icon-price-tags icon"></i>
+		<ul class="article-tag-list">
+			 
+        		<li class="article-tag-list-item">
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color5">欺诈检测</a>
+        		</li>
+      		
+		</ul>
+	</div>
+
+      
+
+      
+        <p class="article-more-link">
+          <a class="article-more-a" href="/2026/06/16/fraud-detection-md/">展开全文 >></a>
+        </p>
+      
+
+      
+      <div class="clearfix"></div>
+    </div>
+  </div>
+</article>
+
+<aside class="wrap-side-operation">
+    <div class="mod-side-operation">
+        
+        <div class="jump-container" id="js-jump-container" style="display:none;">
+            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
+                <i class="icon-font icon-back"></i>
+            </a>
+            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
+                <i class="icon-font icon-plane jump-plane"></i>
+            </div>
+        </div>
+        
+        
+    </div>
+</aside>
+
+
+
+
+  
     <article id="post-本科获奖经历汇总" class="article article-type-post  article-index" itemscope itemprop="blogPost">
   <div class="article-inner">
     
@@ -495,6 +626,10 @@ MathJax.Hub.Queue(function() {
             <input type="checkbox" q-on="click:toggleTag(e)" q-attr="checked:showTags">
           </label>
           <ul class="article-tag-list" q-show="showTags">
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color5">欺诈检测</a>
+              </li>
             
             <div class="clearfix"></div>
           </ul>
