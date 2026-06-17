@@ -8,12 +8,12 @@
   <link rel="dns-prefetch" href="https://yan990.github.io">
   <title>金融审批离线数仓 | yan990</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta name="description" content="金融审批离线数仓一、数据仓库 数据仓库的概念  数据仓库（Data Warehouse），是为企业制定决策，提供数据支持的。可以帮助企业，改进业务流程、提高产品质量等。 数据仓库的输入数据通常包括：业务数据、用户行为数据和爬虫数据等。本项目仅对业务数据进行统计。 业务数据：就是各行业在处理事务过程中产生的数据。比如用户在电商网站中登录、下单、支付等过程中，需要和网站后台数据库进行增删改查交互，产生">
+  <meta name="description" content="一、数据仓库 数据仓库的概念  数据仓库（Data Warehouse），是为企业制定决策，提供数据支持的。可以帮助企业，改进业务流程、提高产品质量等。 数据仓库的输入数据通常包括：业务数据、用户行为数据和爬虫数据等。本项目仅对业务数据进行统计。 业务数据：就是各行业在处理事务过程中产生的数据。比如用户在电商网站中登录、下单、支付等过程中，需要和网站后台数据库进行增删改查交互，产生的数据就是业务数">
 <meta property="og:type" content="article">
 <meta property="og:title" content="金融审批离线数仓">
 <meta property="og:url" content="https://yan990.github.io/2026/06/17/%E9%87%91%E8%9E%8D%E5%AE%A1%E6%89%B9%E7%A6%BB%E7%BA%BF%E6%95%B0%E4%BB%93/index.html">
 <meta property="og:site_name" content="yan990">
-<meta property="og:description" content="金融审批离线数仓一、数据仓库 数据仓库的概念  数据仓库（Data Warehouse），是为企业制定决策，提供数据支持的。可以帮助企业，改进业务流程、提高产品质量等。 数据仓库的输入数据通常包括：业务数据、用户行为数据和爬虫数据等。本项目仅对业务数据进行统计。 业务数据：就是各行业在处理事务过程中产生的数据。比如用户在电商网站中登录、下单、支付等过程中，需要和网站后台数据库进行增删改查交互，产生">
+<meta property="og:description" content="一、数据仓库 数据仓库的概念  数据仓库（Data Warehouse），是为企业制定决策，提供数据支持的。可以帮助企业，改进业务流程、提高产品质量等。 数据仓库的输入数据通常包括：业务数据、用户行为数据和爬虫数据等。本项目仅对业务数据进行统计。 业务数据：就是各行业在处理事务过程中产生的数据。比如用户在电商网站中登录、下单、支付等过程中，需要和网站后台数据库进行增删改查交互，产生的数据就是业务数">
 <meta property="og:locale" content="zh_CN">
 <meta property="og:image" content="https://yan990.github.io/2026/06/17/%E9%87%91%E8%9E%8D%E5%AE%A1%E6%89%B9%E7%A6%BB%E7%BA%BF%E6%95%B0%E4%BB%93/Financial_lease.png">
 <meta property="og:image" content="https://yan990.github.io/2026/06/17/%E9%87%91%E8%9E%8D%E5%AE%A1%E6%89%B9%E7%A6%BB%E7%BA%BF%E6%95%B0%E4%BB%93/financial_lease_data.png">
@@ -22,7 +22,7 @@
 <meta property="og:image" content="https://yan990.github.io/2026/06/17/%E9%87%91%E8%9E%8D%E5%AE%A1%E6%89%B9%E7%A6%BB%E7%BA%BF%E6%95%B0%E4%BB%93/true_data_warehouse.png">
 <meta property="og:image" content="https://yan990.github.io/2026/06/17/%E9%87%91%E8%9E%8D%E5%AE%A1%E6%89%B9%E7%A6%BB%E7%BA%BF%E6%95%B0%E4%BB%93/superset_analysis.png">
 <meta property="article:published_time" content="2026-06-17T13:47:34.000Z">
-<meta property="article:modified_time" content="2026-06-17T13:56:10.000Z">
+<meta property="article:modified_time" content="2026-06-17T14:03:22.000Z">
 <meta property="article:author" content="yan990">
 <meta property="article:tag" content="大数据">
 <meta name="twitter:card" content="summary">
@@ -170,7 +170,7 @@
     
     <div class="article-entry" itemprop="articleBody">
       
-        <h1 id="金融审批离线数仓"><a href="#金融审批离线数仓" class="headerlink" title="金融审批离线数仓"></a>金融审批离线数仓</h1><h2 id="一、数据仓库"><a href="#一、数据仓库" class="headerlink" title="一、数据仓库"></a>一、数据仓库</h2><ol>
+        <h2 id="一、数据仓库"><a href="#一、数据仓库" class="headerlink" title="一、数据仓库"></a>一、数据仓库</h2><ol>
 <li>数据仓库的概念</li>
 </ol>
 <p>数据仓库（Data Warehouse），是为企业制定决策，提供数据支持的。可以帮助企业，改进业务流程、提高产品质量等。</p>
@@ -223,7 +223,8 @@
 </tr>
 </tbody></table>
 <p>通常情况，业务表数据量比较大，优先考虑增量，数据量比较小，优先考虑全量；具体选择由数仓模型决定。</p>
-<h2 id="三、金融租赁业务流程"><a href="#三、金融租赁业务流程" class="headerlink" title="三、金融租赁业务流程"></a>三、金融租赁业务流程</h2><p><img src="/2026/06/17/%E9%87%91%E8%9E%8D%E5%AE%A1%E6%89%B9%E7%A6%BB%E7%BA%BF%E6%95%B0%E4%BB%93/Financial_lease.png"></p>
+<h2 id="三、金融租赁业务流程"><a href="#三、金融租赁业务流程" class="headerlink" title="三、金融租赁业务流程"></a>三、金融租赁业务流程</h2><img src="/2026/06/17/%E9%87%91%E8%9E%8D%E5%AE%A1%E6%89%B9%E7%A6%BB%E7%BA%BF%E6%95%B0%E4%BB%93/Financial_lease.png" style="zoom:80%;">
+
 <ol>
 <li><p>新增申请<br>客户发起融资租赁申请，提交以下材料和信息。</p>
 <ul>
